@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema CRUD - Julio Ruiz (2024-2009)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="toast" class="toast"></div>
+
+    <div class="contenedor" id="pantalla_login">
+        <h2>Acceso Administrativo</h2>
+        <input type="text" id="usuario" placeholder="Usuario">
+        <input type="password" id="clave" placeholder="Contraseña">
+        <button id="btn_entrar" onclick="iniciarSesion()">Iniciar Sesión</button>
+        <p id="mensaje_login" class="error-msg"></p>
+    </div>
+
+    <div class="contenedor" id="pantalla_crud" style="display: none;">
+        <h2>Gestión de Clientes</h2>
+        <p class="subtitle">Administrador: Julio Ruiz</p>
+        <div class="form-group">
+            <input type="text" id="nombre_cliente" placeholder="Nombre completo">
+            <input type="number" id="edad_cliente" placeholder="Edad">
+            <input type="text" id="telefono_cliente" placeholder="Número de teléfono">
+            <input type="text" id="direccion_cliente" placeholder="Dirección completa">
+            <button id="btn_crear" onclick="crearRegistro()">Agregar Cliente</button>
+            <button id="btn_guardar_edicion" onclick="guardarEdicion()" style="display: none;">Guardar Cambios</button>
+            <p id="mensaje_crud" class="error-msg"></p>
+        </div>
+        <h3>Directorio Activo:</h3>
+        <ul id="lista_datos"></ul>
+    </div>
+
+    <script>
+        let idEdicionActual = null;
+        let contadorRegistros = 0;
+
+        function mostrarToast(mensaje) {
+            let toast = document.getElementById('toast');
+            toast.innerText = mensaje;
+            toast.className = "toast show";
+            setTimeout(function() { 
+                toast.className = toast.className.replace("show", ""); 
+            }, 3000);
+        }
+
+        function iniciarSesion() {
+            let usu = document.getElementById('usuario').value;
+            let pass = document.getElementById('clave').value;
+            if (usu === 'admin' && pass === '1234') {
+                document.getElementById('pantalla_login').style.display = 'none';
+                document.getElementById('pantalla_crud').style.display = 'block';
+            } else {
+                document.getElementById('mensaje_login').innerText = 'Acceso denegado: Credenciales inválidas';
+            }
+        }
+
+        function limpiarCampos() {
+            document.getElementById('nombre_cliente').value = ''; 
+            document.getElementById('edad_cliente').value = ''; 
+            document.getElementById('telefono_cliente').value = ''; 
+            document.getElementById('direccion_cliente').value = ''; 
+        }
+
+        function limpiarMensajes() {
+            document.getElementById('mensaje_crud').innerText = '';
+        }
+
+        function crearRegistro() {
+            limpiarMensajes();
+            let nombre = document.getElementById('nombre_cliente').value;
+            let edad = document.getElementById('edad_cliente').value;
+            let telefono = document.getElementById('telefono_cliente').value;
+            let direccion = document.getElementById('direccion_cliente').value;
+
+            if (nombre.trim() === '') {
+                document.getElementById('mensaje_crud').innerText = 'Límite de validación: El nombre es obligatorio';
+                return;
+            }
+            
+            contadorRegistros++;
+            let li = document.createElement('li');
+            li.id = 'registro_' + contadorRegistros;
+            
+            li.innerHTML = `
+                <div class="datos-cliente">
+                    <strong class="val-nombre">${nombre}</strong><br>
+                    Edad: <span class="val-edad">${edad}</span> años<br>
+                    Tel: <span class="val-telefono">${telefono}</span><br>
+                    Dir: <span class="val-direccion">${direccion}</span>
+                </div>
+                <div class="acciones-cliente">
+                    <button class="btn-sm btn-editar" onclick="cargarEdicion('${li.id}')">Editar</button>
+                    <button class="btn-sm btn-eliminar" onclick="eliminarRegistro('${li.id}')">Eliminar</button>
+                </div>
+            `;
+            
+            document.getElementById('lista_datos').appendChild(li);
+            limpiarCampos();
+            mostrarToast('Se agregó con éxito');
+        }
+
+        function cargarEdicion(id) {
+            limpiarMensajes();
+            idEdicionActual = id;
+            let li = document.getElementById(id);
+            
+            document.getElementById('nombre_cliente').value = li.querySelector('.val-nombre').innerText;
+            document.getElementById('edad_cliente').value = li.querySelector('.val-edad').innerText;
+            document.getElementById('telefono_cliente').value = li.querySelector('.val-telefono').innerText;
+            document.getElementById('direccion_cliente').value = li.querySelector('.val-direccion').innerText;
+
+            document.getElementById('btn_crear').style.display = 'none';
+            document.getElementById('btn_guardar_edicion').style.display = 'block';
+        }
+
+        function guardarEdicion() {
+            limpiarMensajes();
+            let nombre = document.getElementById('nombre_cliente').value;
+            let edad = document.getElementById('edad_cliente').value;
+            let telefono = document.getElementById('telefono_cliente').value;
+            let direccion = document.getElementById('direccion_cliente').value;
+
+            if (nombre.trim() === '') {
+                document.getElementById('mensaje_crud').innerText = 'Límite de validación: El nombre es obligatorio';
+                return;
+            }
+
+            let li = document.getElementById(idEdicionActual);
+            li.querySelector('.val-nombre').innerText = nombre;
+            li.querySelector('.val-edad').innerText = edad;
+            li.querySelector('.val-telefono').innerText = telefono;
+            li.querySelector('.val-direccion').innerText = direccion;
+
+            document.getElementById('btn_crear').style.display = 'block';
+            document.getElementById('btn_guardar_edicion').style.display = 'none';
+            idEdicionActual = null;
+            limpiarCampos();
+            mostrarToast('Se editó con éxito');
+        }
+
+        function eliminarRegistro(id) {
+            limpiarMensajes();
+            document.getElementById(id).remove();
+            mostrarToast('Se eliminó con éxito');
+        }
+    </script>
+</body>
+</html>
